@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🦁 Science Lion Classroom Quiz</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(#0310A1, #046EF2, #91C7FC);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .classroom {
+      background: rgba(255, 255, 255, 0.85);
+      width: 900px;
+      height: 550px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .question-area {
+      position: absolute;
+      top: 100px;
+      left: 80px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .lion {
+      width: 150px;
+      animation: bounce 2s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .speech {
+      background: #fff5c4;
+      padding: 20px 25px;
+      border-radius: 20px;
+      border: 3px solid #ffd54f;
+      font-size: 20px;
+      font-weight: bold;
+      width: 500px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .options {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 70%;
+    }
+
+    .option {
+      background: white;
+      border: 2px solid #ffa000;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .option:hover {
+      background: #ffd54f;
+      transform: scale(1.05);
+    }
+
+    .option.correct {
+      background: #4caf50;
+      color: white;
+    }
+
+    .option.wrong {
+      background: #e53935;
+      color: white;
+    }
+
+    .scoreboard {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      text-align: right;
+    }
+
+    .scoreboard div {
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 15px;
+      margin: 5px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .correct { color: green; }
+    .wrong { color: red; }
+
+    .emoji {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 60px;
+      animation: pop 1s ease;
+      text-align: center;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0) translateX(-50%); }
+      100% { transform: scale(1) translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+  <div class="classroom">
+    <div class="scoreboard">
+      <div class="correct">✅ Correct: <span id="correct">0</span></div>
+      <div class="wrong">❌ Wrong: <span id="wrong">0</span></div>
+    </div>
+
+    <div class="question-area">
+      <img src="https://media3.giphy.com/avatars/SharonKilgannon/uhuSZfOwQqcs.gif" alt="Lion" class="lion" />
+      <div class="speech" id="question">Loading question...</div>
+    </div>
+
+    <div class="options" id="options"></div>
+    <div id="emoji"></div>
+
+    <!-- Sound effects -->
+    <audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3d1b3b7894.mp3?filename=correct-2-46134.mp3"></audio>
+    <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3d1b3b7894.mp3?filename=wrong-buzzer-35814.mp3"></audio>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "What planet is known as the Red Planet?", a: "Mars", options: ["Earth", "Venus", "Mars", "Jupiter"] },
+      { q: "Which gas do plants absorb from the air?", a: "Carbon dioxide", options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"] },
+      { q: "What is H2O commonly known as?", a: "Water", options: ["Salt", "Water", "Oxygen", "Ice"] },
+      { q: "Which organ pumps blood in our body?", a: "Heart", options: ["Lungs", "Brain", "Heart", "Stomach"] },
+      { q: "Which force pulls everything to the Earth?", a: "Gravity", options: ["Magnetism", "Gravity", "Friction", "Push"] },
+      { q: "What part of the plant makes food?", a: "Leaf", options: ["Root", "Stem", "Leaf", "Flower"] },
+      { q: "Which star gives us heat and light?", a: "Sun", options: ["Moon", "Sun", "Venus", "Mars"] },
+      { q: "What do bees collect from flowers?", a: "Nectar", options: ["Honey", "Pollen", "Nectar", "Seeds"] },
+      { q: "What planet is closest to the Sun?", a: "Mercury", options: ["Earth", "Venus", "Mercury", "Mars"] },
+      { q: "Which animal is known as the king of the jungle?", a: "Lion", options: ["Tiger", "Lion", "Elephant", "Leopard"] },
+      { q: "How many continents are there on Earth?", a: "Seven", options: ["Six", "Seven", "Eight", "Nine"] },
+      { q: "What is the largest mammal in the world?", a: "Blue whale", options: ["Elephant", "Blue whale", "Giraffe", "Shark"] },
+      { q: "Which planet is known for its rings?", a: "Saturn", options: ["Neptune", "Jupiter", "Saturn", "Uranus"] },
+      { q: "Which insect has beautiful wings and comes from a caterpillar?", a: "Butterfly", options: ["Bee", "Ant", "Butterfly", "Grasshopper"] },
+      { q: "What gas do humans breathe in to stay alive?", a: "Oxygen", options: ["Carbon dioxide", "Oxygen", "Nitrogen", "Helium"] },
+      { q: "Which part of the body helps you to see?", a: "Eyes", options: ["Nose", "Mouth", "Ears", "Eyes"] },
+      { q: "What do cows give us to drink?", a: "Milk", options: ["Juice", "Milk", "Water", "Honey"] },
+      { q: "Which planet do we live on?", a: "Earth", options: ["Earth", "Mars", "Jupiter", "Venus"] },
+      { q: "Which bird cannot fly but can swim?", a: "Penguin", options: ["Eagle", "Penguin", "Sparrow", "Parrot"] },
+      { q: "How many legs does a spider have?", a: "Eight", options: ["Six", "Eight", "Ten", "Four"] },
+      { q: "What is the hardest natural substance on Earth?", a: "Diamond", options: ["Gold", "Iron", "Diamond", "Stone"] },
+      { q: "Which organ helps you breathe?", a: "Lungs", options: ["Heart", "Lungs", "Kidneys", "Brain"] },
+      { q: "What is the largest planet in our Solar System?", a: "Jupiter", options: ["Saturn", "Jupiter", "Mars", "Earth"] },
+      { q: "Which ocean is the largest?", a: "Pacific Ocean", options: ["Atlantic Ocean", "Pacific Ocean", "Indian Ocean", "Arctic Ocean"] },
+      { q: "Which animal has a long trunk?", a: "Elephant", options: ["Giraffe", "Elephant", "Camel", "Rhino"] },
+      { q: "Which organ helps you to think?", a: "Brain", options: ["Heart", "Brain", "Lungs", "Kidneys"] },
+      { q: "Which metal is liquid at room temperature?", a: "Mercury", options: ["Gold", "Iron", "Mercury", "Silver"] },
+      { q: "Which is the smallest planet in our solar system?", a: "Mercury", options: ["Mars", "Mercury", "Venus", "Earth"] },
+      { q: "Which part of the plant is usually underground?", a: "Root", options: ["Root", "Stem", "Leaf", "Flower"] },
+      { q: "Which gas is essential for burning?", a: "Oxygen", options: ["Carbon dioxide", "Hydrogen", "Oxygen", "Nitrogen"] },
+      { q: "What gives blood its red color?", a: "Hemoglobin", options: ["Plasma", "Hemoglobin", "Chlorophyll", "Iron"] },
+      { q: "Which vitamin is produced when skin is exposed to sunlight?", a: "Vitamin D", options: ["Vitamin A", "Vitamin C", "Vitamin D", "Vitamin B12"] },
+      { q: "Which planet is known as the 'Blue Planet'?", a: "Earth", options: ["Mars", "Earth", "Venus", "Neptune"] },
+      { q: "Which animal gives wool?", a: "Sheep", options: ["Goat", "Sheep", "Cow", "Camel"] },
+      { q: "What do we call the path Earth takes around the Sun?", a: "Orbit", options: ["Rotation", "Revolution", "Orbit", "Cycle"] },
+      { q: "What is the boiling point of water?", a: "100°C", options: ["50°C", "100°C", "150°C", "200°C"] },
+      { q: "Which planet is farthest from the Sun?", a: "Neptune", options: ["Uranus", "Neptune", "Jupiter", "Saturn"] },
+      { q: "What part of the human body contains the brain?", a: "Head", options: ["Head", "Chest", "Leg", "Arm"] },
+      { q: "What shape is the Earth?", a: "Spherical", options: ["Flat", "Spherical", "Square", "Triangle"] },
+      { q: "What is the process by which plants make food?", a: "Photosynthesis", options: ["Respiration", "Photosynthesis", "Transpiration", "Evaporation"] },
+      { q: "Which planet has the most moons?", a: "Saturn", options: ["Earth", "Mars", "Jupiter", "Saturn"] },
+      { q: "Which animal lays eggs?", a: "Hen", options: ["Dog", "Cat", "Hen", "Cow"] },
+      { q: "Which sense organ helps you to hear?", a: "Ear", options: ["Eye", "Ear", "Nose", "Skin"] },
+      { q: "Which gas do we exhale?", a: "Carbon dioxide", options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"] },
+      { q: "What does a thermometer measure?", a: "Temperature", options: ["Speed", "Weight", "Temperature", "Time"] },
+      { q: "Which planet is known for its red storms?", a: "Jupiter", options: ["Mars", "Jupiter", "Neptune", "Venus"] },
+      { q: "Which metal is used to make electrical wires?", a: "Copper", options: ["Iron", "Gold", "Copper", "Silver"] },
+      { q: "What do plants release during photosynthesis?", a: "Oxygen", options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Water"] },
+      { q: "Which animal is the tallest?", a: "Giraffe", options: ["Elephant", "Giraffe", "Horse", "Camel"] },
+      { q: "Which is the main source of energy for Earth?", a: "Sun", options: ["Moon", "Sun", "Stars", "Fire"] }
+    ];
+
+    let current = 0, correct = 0, wrong = 0;
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+    const shuffledQuestions = shuffle([...questions]);
+
+    function loadQuestion() {
+      const q = shuffledQuestions[current];
+      document.getElementById("question").innerText = q.q;
+      document.getElementById("emoji").innerHTML = "";
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      q.options.forEach(opt => {
+        const btn = document.createElement("div");
+        btn.className = "option";
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(opt, btn);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected, btn) {
+      const correctAns = shuffledQuestions[current].a;
+      const emojiDiv = document.getElementById("emoji");
+      const optionButtons = document.querySelectorAll(".option");
+
+      optionButtons.forEach(b => b.style.pointerEvents = "none");
+
+      if (selected === correctAns) {
+        correct++;
+        correctSound.play();
+        document.getElementById("correct").innerText = correct;
+        btn.classList.add("correct");
+        emojiDiv.innerHTML = "🎉";
+      } else {
+        wrong++;
+        wrongSound.play();
+        document.getElementById("wrong").innerText = wrong;
+        btn.classList.add("wrong");
+        emojiDiv.innerHTML = `😢<br><small>Correct: ${correctAns}</small>`;
+      }
+
+      setTimeout(() => nextQuestion(), 1500);
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current >= shuffledQuestions.length) {
+        alert(`🎉 Game Over!\n✅ Correct: ${correct}\n❌ Wrong: ${wrong}`);
+        location.reload();
+      } else {
+        loadQuestion();
+      }
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>

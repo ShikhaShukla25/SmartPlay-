@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🦒 Giraffe GK Quiz Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(#008592, #009695, #00A894, #00BA8C, #48C97E, #7FD671, #AEE163, #DBEB57, #FFF39E);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .classroom {
+      background: #F9FCD5; /* Light classroom color */
+      width: 900px;
+      height: 550px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .question-area {
+      position: absolute;
+      top: 100px;
+      left: 80px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .giraffe {
+      width: 150px;
+      height: auto;
+      animation: bounce 3s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .speech {
+      background: #fff5c4;
+      padding: 20px 25px;
+      border-radius: 20px;
+      border: 3px solid #ffd54f;
+      font-size: 20px;
+      font-weight: bold;
+      width: 500px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .options {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 70%;
+    }
+
+    .option {
+      background: white;
+      border: 2px solid #ffa000;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .option:hover {
+      background: #ffd54f;
+      transform: scale(1.05);
+    }
+
+    .option.correct {
+      background: #4caf50;
+      color: white;
+    }
+
+    .option.wrong {
+      background: #e53935;
+      color: white;
+    }
+
+    .scoreboard {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      text-align: right;
+    }
+
+    .scoreboard div {
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 15px;
+      margin: 5px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .correct { color: green; }
+    .wrong { color: red; }
+
+    #emoji {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 60px;
+      animation: pop 1s ease;
+      text-align: center;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0) translateX(-50%); }
+      100% { transform: scale(1) translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+  <div class="classroom">
+    <div class="scoreboard">
+      <div class="correct">✅ Correct: <span id="correct">0</span></div>
+      <div class="wrong">❌ Wrong: <span id="wrong">0</span></div>
+    </div>
+
+    <div class="question-area">
+      <img src="https://i.pinimg.com/originals/b2/4a/3a/b24a3a0c4864e925690862490cc9ac25.gif" alt="Giraffe" class="giraffe" />
+      <div class="speech" id="question">Loading question...</div>
+    </div>
+
+    <div class="options" id="options"></div>
+    <div id="emoji"></div>
+  </div>
+
+  <!-- 🎵 Sound Effects -->
+  <audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_66ad7edc96.mp3?filename=correct-2-46134.mp3"></audio>
+  <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2021/09/15/audio_d3a5d4b3d5.mp3?filename=wrong-answer-126515.mp3"></audio>
+
+  <script>
+    const questions = [
+      { q: "Who is the President of India?", a: "Droupadi Murmu", options: ["Narendra Modi", "Droupadi Murmu", "Amit Shah", "Ram Nath Kovind"] },
+      { q: "What is the capital of France?", a: "Paris", options: ["London", "Paris", "Berlin", "Rome"] },
+      { q: "Which is the smallest continent?", a: "Australia", options: ["Africa", "Europe", "Australia", "Asia"] },
+      { q: "Which festival is known as the festival of lights?", a: "Diwali", options: ["Holi", "Eid", "Diwali", "Navratri"] },
+      { q: "Which animal is known as the Ship of the Desert?", a: "Camel", options: ["Camel", "Elephant", "Horse", "Tiger"] },
+      { q: "Which planet is known as the Blue Planet?", a: "Earth", options: ["Venus", "Earth", "Mars", "Jupiter"] },
+      { q: "Who wrote the National Anthem of India?", a: "Rabindranath Tagore", options: ["Mahatma Gandhi", "Rabindranath Tagore", "Subhash Chandra Bose", "Jawaharlal Nehru"] },
+      { q: "Which is the largest ocean in the world?", a: "Pacific Ocean", options: ["Atlantic Ocean", "Pacific Ocean", "Indian Ocean", "Arctic Ocean"] },
+      { q: "What is the national flower of India?", a: "Lotus", options: ["Rose", "Sunflower", "Lily", "Lotus"] },
+      { q: "Which planet is closest to the Sun?", a: "Mercury", options: ["Venus", "Mars", "Mercury", "Earth"] },
+      { q: "Which is the largest state in India?", a: "Rajasthan", options: ["Maharashtra", "Uttar Pradesh", "Rajasthan", "Madhya Pradesh"] },
+      { q: "What is the national bird of India?", a: "Peacock", options: ["Parrot", "Eagle", "Peacock", "Crow"] },
+      { q: "How many days are there in a leap year?", a: "366", options: ["364", "365", "366", "367"] },
+      { q: "Which country is known as the Land of Rising Sun?", a: "Japan", options: ["India", "China", "Japan", "Thailand"] },
+      { q: "What color are the stars on the US flag?", a: "White", options: ["Blue", "Red", "White", "Yellow"] },
+      { q: "Which gas do plants absorb from the atmosphere?", a: "Carbon dioxide", options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"] },
+      { q: "Which organ purifies our blood?", a: "Kidney", options: ["Heart", "Lungs", "Kidney", "Liver"] },
+      { q: "Which planet is known as the Red Planet?", a: "Mars", options: ["Earth", "Mars", "Venus", "Jupiter"] },
+      { q: "Which festival marks the victory of good over evil?", a: "Dussehra", options: ["Diwali", "Holi", "Dussehra", "Eid"] },
+      { q: "Who was the first Prime Minister of India?", a: "Jawaharlal Nehru", options: ["Indira Gandhi", "Mahatma Gandhi", "Jawaharlal Nehru", "Rajendra Prasad"] },
+      { q: "Which gas is essential for breathing?", a: "Oxygen", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Helium"] },
+      { q: "How many continents are there in the world?", a: "7", options: ["5", "6", "7", "8"] },
+      { q: "Which is the fastest land animal?", a: "Cheetah", options: ["Lion", "Cheetah", "Horse", "Tiger"] },
+      { q: "Which fruit is known as the king of fruits?", a: "Mango", options: ["Banana", "Mango", "Apple", "Orange"] },
+      { q: "Which festival is celebrated with colors?", a: "Holi", options: ["Holi", "Eid", "Diwali", "Christmas"] },
+      { q: "Which is the national river of India?", a: "Ganga", options: ["Ganga", "Yamuna", "Godavari", "Krishna"] },
+      { q: "Which planet has rings around it?", a: "Saturn", options: ["Jupiter", "Saturn", "Neptune", "Uranus"] },
+      { q: "Which is the largest planet?", a: "Jupiter", options: ["Mars", "Venus", "Earth", "Jupiter"] },
+      { q: "Which animal gives us wool?", a: "Sheep", options: ["Cow", "Sheep", "Goat", "Horse"] },
+      { q: "What is the capital of India?", a: "New Delhi", options: ["Mumbai", "Kolkata", "New Delhi", "Chennai"] },
+      { q: "How many colors are there in a rainbow?", a: "7", options: ["5", "6", "7", "8"] },
+      { q: "Which metal is liquid at room temperature?", a: "Mercury", options: ["Iron", "Gold", "Mercury", "Aluminum"] },
+      { q: "What is H2O?", a: "Water", options: ["Oxygen", "Hydrogen", "Water", "Carbon dioxide"] },
+      { q: "Which is the largest mammal?", a: "Blue Whale", options: ["Elephant", "Blue Whale", "Shark", "Dolphin"] },
+      { q: "Which is the hottest planet?", a: "Venus", options: ["Mercury", "Mars", "Venus", "Earth"] },
+      { q: "Which animal is known as the King of Jungle?", a: "Lion", options: ["Tiger", "Lion", "Elephant", "Leopard"] },
+      { q: "Which organ helps in pumping blood?", a: "Heart", options: ["Brain", "Lungs", "Heart", "Liver"] },
+      { q: "What is 5 × 5?", a: "25", options: ["20", "25", "30", "35"] },
+      { q: "Which festival celebrates the birth of Lord Krishna?", a: "Janmashtami", options: ["Holi", "Diwali", "Janmashtami", "Navratri"] },
+      { q: "Which crop is known as the staple food of India?", a: "Rice", options: ["Rice", "Wheat", "Maize", "Barley"] },
+      { q: "Which month has 28 or 29 days?", a: "February", options: ["January", "March", "February", "April"] },
+      { q: "Which direction does the sun rise from?", a: "East", options: ["North", "South", "East", "West"] },
+      { q: "Which is the smallest bird?", a: "Hummingbird", options: ["Sparrow", "Hummingbird", "Crow", "Peacock"] },
+      { q: "Which country is called Bharat?", a: "India", options: ["Nepal", "India", "Sri Lanka", "Bhutan"] },
+      { q: "What is the color of chlorophyll?", a: "Green", options: ["Red", "Green", "Blue", "Yellow"] },
+      { q: "Who invented the light bulb?", a: "Thomas Edison", options: ["Newton", "Einstein", "Thomas Edison", "Faraday"] },
+      { q: "Which part of the plant makes food?", a: "Leaf", options: ["Root", "Stem", "Leaf", "Flower"] },
+      { q: "Which is the largest desert?", a: "Sahara", options: ["Gobi", "Sahara", "Thar", "Kalahari"] },
+      { q: "What is the national currency of India?", a: "Rupee", options: ["Dollar", "Euro", "Rupee", "Yen"] },
+      { q: "Which festival is celebrated on December 25?", a: "Christmas", options: ["Eid", "Holi", "Christmas", "Diwali"] }
+    ];
+
+    let current = 0, correct = 0, wrong = 0;
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+    const shuffledQuestions = shuffle([...questions]);
+
+    function loadQuestion() {
+      const q = shuffledQuestions[current];
+      document.getElementById("question").innerText = q.q;
+      document.getElementById("emoji").innerHTML = "";
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      q.options.forEach(opt => {
+        const btn = document.createElement("div");
+        btn.className = "option";
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(opt, btn);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected, btn) {
+      const correctAns = shuffledQuestions[current].a;
+      const emojiDiv = document.getElementById("emoji");
+      const optionButtons = document.querySelectorAll(".option");
+
+      optionButtons.forEach(b => b.style.pointerEvents = "none");
+
+      if (selected === correctAns) {
+        correct++;
+        correctSound.play();
+        document.getElementById("correct").innerText = correct;
+        btn.classList.add("correct");
+        emojiDiv.innerHTML = "🎉";
+      } else {
+        wrong++;
+        wrongSound.play();
+        document.getElementById("wrong").innerText = wrong;
+        btn.classList.add("wrong");
+        emojiDiv.innerHTML = `😢<br><small>Correct: ${correctAns}</small>`;
+      }
+
+      setTimeout(() => nextQuestion(), 1500);
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current >= shuffledQuestions.length) {
+        alert(`🎮 Game Over!\n✅ Correct: ${correct}\n❌ Wrong: ${wrong}`);
+        location.reload();
+      } else {
+        loadQuestion();
+      }
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiplication Game</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<style>
+  body {
+    background: linear-gradient(#cf0038, #de4a55, #ea7274, #f49795, #fbbab7, #ffdcdb);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Comic Sans MS', cursive;
+  }
+
+  .game-container {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    width: 420px;
+    position: relative;
+  }
+
+  h1 {
+    color: #FF5722;
+    font-size: 28px;
+  }
+
+  .emoji-display {
+    font-size: 35px;
+    margin: 20px 0;
+    line-height: 1.4;
+  }
+
+  input {
+    padding: 10px;
+    border: 2px solid #FF9800;
+    border-radius: 10px;
+    font-size: 18px;
+    text-align: center;
+    width: 180px;
+  }
+
+  button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 15px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+  }
+
+  button:hover {
+    background: #45a049;
+  }
+
+  .score {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .emoji-large {
+    font-size: 45px;
+    margin-top: 15px;
+  }
+</style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>✖️ Multiplication Game 🎮</h1>
+    <p class="score">Score: <span id="score">0</span> 🌟</p>
+    <p id="question"></p>
+    <div id="emojiDisplay" class="emoji-display"></div>
+    <input type="number" id="answer" placeholder="Enter your answer">
+    <br>
+    <button id="submitBtn">✅ Submit</button>
+    <button id="nextBtn" style="display:none;">➡️ Next</button>
+    <div id="feedback" class="emoji-large"></div>
+  </div>
+
+<script>
+  const objects = [
+    { emoji: "🍎", name: "apple" },
+      { emoji: "🍌", name: "banana" },
+      { emoji: "🎈", name: "balloon" },
+      { emoji: "🚗", name: "car" },
+      { emoji: "🍓", name: "strawberry" },
+      { emoji: "🐠", name: "fish" },
+      { emoji: "🏀", name: "ball" },
+      { emoji: "🧁", name: "cupcake" },
+      { emoji: "🌟", name: "star" },
+      { emoji: "🐱", name: "cat" },
+      { emoji: "🐶", name: "dog" },
+      { emoji: "🚀", name: "rocket" },
+      {emoji: "🌈", name: "rainbow" },
+      { emoji: "🍕", name: "pizza" },
+      { emoji: "📚", name: "book" },
+      {emoji: "🍇", name: "grape" },
+      { emoji: "🌻", name: "sunflower" },
+      { emoji: "🍉", name: "watermelon" },
+      { emoji: "🦋", name: "butterfly" },
+      { emoji: "🍭", name: "lollipop" },
+      { emoji: "🎂", name: "cake" },
+      { emoji: "🍩", name: "donut" },
+      { emoji: "🍔", name: "burger"},
+      { emoji: "🍦", name: "ice cream" },
+      {emoji: "🐼", name: "panda" },
+      { emoji: "🌺", name: "hibiscus" }
+  ];
+
+  let score = 0;
+  let correctAnswer;
+
+  const question = document.getElementById("question");
+  const emojiDisplay = document.getElementById("emojiDisplay");
+  const feedback = document.getElementById("feedback");
+  const answerInput = document.getElementById("answer");
+  const scoreDisplay = document.getElementById("score");
+  const submitBtn = document.getElementById("submitBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  function generateQuestion() {
+    feedback.innerHTML = "";
+    answerInput.value = "";
+    nextBtn.style.display = "none";
+    submitBtn.style.display = "inline-block";
+
+    const selectedObject = objects[Math.floor(Math.random() * objects.length)];
+    const num1 = Math.floor(Math.random() * 5) + 2;
+    const num2 = Math.floor(Math.random() * 5) + 2;
+    correctAnswer = num1 * num2;
+
+    question.innerHTML = `If we have ${num1} groups of ${num2} ${selectedObject.name}s, how many ${selectedObject.name}s are there in total?`;
+
+    // ✨ Display like 🍎🍎 × 🍎🍎🍎
+    const totalObjects = selectedObject.emoji.repeat(num1) + " ✖️ " + selectedObject.emoji.repeat(num2);
+    emojiDisplay.innerHTML = totalObjects;
+  }
+
+  function showConfetti() {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  }
+
+  function checkAnswer() {
+    const userAnswer = parseInt(answerInput.value);
+    if (isNaN(userAnswer)) return;
+
+    if (userAnswer === correctAnswer) {
+      feedback.innerHTML = "🎉 Correct! Great job!";
+      showConfetti();
+      score++;
+      scoreDisplay.textContent = score;
+    } else {
+      feedback.innerHTML = `😢 Oops! The correct answer is ${correctAnswer}`;
+    }
+
+    submitBtn.style.display = "none";
+    nextBtn.style.display = "inline-block";
+  }
+
+  submitBtn.addEventListener("click", checkAnswer);
+  nextBtn.addEventListener("click", generateQuestion);
+
+  // Press Enter to submit or move next
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      if (submitBtn.style.display !== "none") checkAnswer();
+      else if (nextBtn.style.display !== "none") generateQuestion();
+    }
+  });
+
+  generateQuestion();
+</script>
+</body>
+</html>

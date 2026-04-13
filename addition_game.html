@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎮 Addition Fun Game | Gamified Learning</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient( #CAF0F8, #90E0EF, #00B4D8, #0077B6, #03045E);
+      text-align: center;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .game-container {
+      background: white;
+      width: 90%;
+      max-width: 500px;
+      padding: 40px;
+      border-radius: 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.8s ease-in-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      color: #ff5722;
+      font-size: 2rem;
+      margin-bottom: 10px;
+      animation: bounceIn 0.8s ease;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    .score-board {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .images {
+      font-size: 35px;
+      margin: 20px 0;
+      transition: transform 0.5s;
+      animation: floatEmoji 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatEmoji {
+      from { transform: translateY(0px); }
+      to { transform: translateY(-10px); }
+    }
+
+    .question {
+      font-size: 20px;
+      color: #444;
+      margin-bottom: 10px;
+      animation: fadeSlideIn 0.6s ease;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    input {
+      font-size: 18px;
+      padding: 8px;
+      width: 120px;
+      border-radius: 10px;
+      border: 2px solid #4CAF50;
+      text-align: center;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      border-color: #ff9800;
+      box-shadow: 0 0 8px #ff9800;
+    }
+
+    button {
+      margin-top: 15px;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      font-size: 16px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.08);
+    }
+
+    .submit-btn {
+      background-color: #4CAF50;
+    }
+
+    .next-btn {
+      background-color: #2196F3;
+      display: none;
+    }
+
+    .result {
+      font-size: 20px;
+      margin-top: 15px;
+      font-weight: bold;
+      transition: 0.3s;
+      min-height: 28px;
+    }
+
+    .celebration, .sad-face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    /* 🎆 Crackers Animation */
+    .cracker {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: yellow;
+      opacity: 0;
+      animation: explode 1s ease-out forwards;
+    }
+
+    @keyframes explode {
+      0% { opacity: 1; transform: scale(1) translate(0, 0); }
+      100% {
+        opacity: 0;
+        transform: scale(2) translate(
+          calc(var(--x) * 100px),
+          calc(var(--y) * 100px)
+        );
+      }
+    }
+
+    /* 😢 Sad Emoji Animation */
+    .sad-emoji {
+      font-size: 80px;
+      animation: shake 0.6s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      50% { transform: translateX(8px); }
+      75% { transform: translateX(-8px); }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>🎉 Addition Fun Game 🎮</h1>
+    <div class="score-board">Score: <span id="score">0</span> 🌟</div>
+    <p class="question" id="question"></p>
+    <div class="images" id="objectDisplay"></div>
+    <input type="number" id="answer" placeholder="Enter your answer" />
+    <br />
+    <button id="submitBtn" class="submit-btn" onclick="checkAnswer()">✅ Submit</button>
+    <button id="nextBtn" class="next-btn" onclick="nextQuestion()">🔄 Next</button>
+    <p class="result" id="result"></p>
+
+    <!-- 🎇 Celebration Container -->
+    <div id="celebration" class="celebration"></div>
+
+    <!-- 😢 Sad Emoji Container -->
+    <div id="sadFace" class="sad-face">
+      <div class="sad-emoji">😢</div>
+    </div>
+  </div>
+
+  <script>
+    const objects = [
+      { emoji: "🍎", name: "apple" },
+      { emoji: "🍌", name: "banana" },
+      { emoji: "🎈", name: "balloon" },
+      { emoji: "🚗", name: "car" },
+      { emoji: "🍓", name: "strawberry" },
+      { emoji: "🐠", name: "fish" },
+      { emoji: "🏀", name: "ball" },
+      { emoji: "🧁", name: "cupcake" },
+      { emoji: "🌟", name: "star" },
+      { emoji: "🐱", name: "cat" },
+      { emoji: "🐶", name: "dog" },
+      { emoji: "🚀", name: "rocket" },
+      {emoji: "🌈", name: "rainbow" },
+      { emoji: "🍕", name: "pizza" },
+      { emoji: "📚", name: "book" },
+      {emoji: "🍇", name: "grape" },
+      { emoji: "🌻", name: "sunflower" },
+      { emoji: "🍉", name: "watermelon" },
+      { emoji: "🦋", name: "butterfly" },
+      { emoji: "🍭", name: "lollipop" },
+      { emoji: "🎂", name: "cake" },
+      { emoji: "🍩", name: "donut" },
+      { emoji: "🍔", name: "burger"},
+      { emoji: "🍦", name: "ice cream" },
+      {emoji: "🐼", name: "panda" },
+      { emoji: "🌺", name: "hibiscus" }
+
+    ];
+
+    let num1, num2, selectedObject, score = 0;
+
+    function playSound(correct = true) {
+      const audio = new Audio(
+        correct
+          ? "https://cdn.pixabay.com/audio/2021/09/01/audio_7d46cb0f28.mp3" // Firecracker
+          : "https://cdn.pixabay.com/audio/2022/03/15/audio_05d1f3b6ef.mp3" // Sad tone
+      );
+      audio.play();
+    }
+
+    function generateQuestion() {
+      num1 = Math.floor(Math.random() * 5) + 1;
+      num2 = Math.floor(Math.random() * 5) + 1;
+      selectedObject = objects[Math.floor(Math.random() * objects.length)];
+
+      const question = `If you have ${num1} ${selectedObject.name}${num1 > 1 ? "s" : ""} and add ${num2} more, how many do you have in total?`;
+      document.getElementById("question").textContent = question;
+
+      const totalObjects = selectedObject.emoji.repeat(num1) + " ➕ " + selectedObject.emoji.repeat(num2);
+      document.getElementById("objectDisplay").textContent = totalObjects;
+
+      document.getElementById("answer").value = "";
+      document.getElementById("result").textContent = "";
+      document.getElementById("celebration").style.display = "none";
+      document.getElementById("sadFace").style.display = "none";
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("submitBtn").style.display = "inline-block";
+      document.getElementById("answer").focus();
+    }
+
+    function showCrackers() {
+      const container = document.getElementById("celebration");
+      container.style.display = "flex";
+      for (let i = 0; i < 20; i++) {
+        const cracker = document.createElement("div");
+        cracker.classList.add("cracker");
+        cracker.style.setProperty("--x", Math.random() * 2 - 1);
+        cracker.style.setProperty("--y", Math.random() * 2 - 1);
+        cracker.style.backgroundColor =
+          ["#ff4d4d", "#ffd11a", "#33cc33", "#3399ff", "#ff66b3"][Math.floor(Math.random() * 5)];
+        container.appendChild(cracker);
+        setTimeout(() => cracker.remove(), 1000);
+      }
+    }
+
+    function showSadEmoji() {
+      const sadFace = document.getElementById("sadFace");
+      sadFace.style.display = "flex";
+      setTimeout(() => { sadFace.style.display = "none"; }, 2000);
+    }
+
+    function checkAnswer() {
+      const userAnswer = parseInt(document.getElementById("answer").value);
+      const correctAnswer = num1 + num2;
+      const result = document.getElementById("result");
+
+      if (isNaN(userAnswer)) {
+        result.textContent = "⚠️ Please enter an answer!";
+        result.style.color = "orange";
+        return;
+      }
+
+      if (userAnswer === correctAnswer) {
+        result.textContent = "🎆 Correct! Awesome job!";
+        result.style.color = "green";
+        playSound(true);
+        score++;
+        document.getElementById("score").textContent = score;
+        showCrackers();
+      } else {
+        result.textContent = `😢 Wrong! The correct answer is ${correctAnswer}.`;
+        result.style.color = "red";
+        playSound(false);
+        showSadEmoji();
+      }
+
+      document.getElementById("submitBtn").style.display = "none";
+      document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+      generateQuestion();
+    }
+
+    // 🔑 Enter key for both submit and next
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        const submitVisible = document.getElementById("submitBtn").style.display !== "none";
+        const nextVisible = document.getElementById("nextBtn").style.display !== "none";
+        if (submitVisible) checkAnswer();
+        else if (nextVisible) nextQuestion();
+      }
+    });
+
+    generateQuestion();
+  </script>
+</body>
+</html>
